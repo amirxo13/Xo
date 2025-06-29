@@ -4,6 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ConfigGenerator } from "@/components/config-generator";
 import { ConfigTester } from "@/components/config-tester";
 import { ConfigManager } from "@/components/config-manager";
+import { TelegramGenerator } from "@/components/telegram-generator";
 import { InstructionsPanel } from "@/components/instructions-panel";
 import { IranHelpPanel } from "@/components/iran-help-panel";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -45,7 +46,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Shield className="h-6 w-6" />
-              <h1 className="text-xl font-semibold">{t("appTitle")}</h1>
+              <h1 className="text-xl font-semibold">XO</h1>
             </div>
             <div className="flex items-center space-x-4">
               <LanguageToggle />
@@ -70,7 +71,10 @@ export default function Home() {
 
         {/* Main Content Grid */}
         <div className="grid gap-6 lg:grid-cols-2">
-          <ConfigGenerator />
+          <div className="space-y-6">
+            <ConfigGenerator />
+            <TelegramGenerator />
+          </div>
           <ConfigTester selectedConfig={selectedConfig} />
         </div>
 
@@ -92,11 +96,11 @@ export default function Home() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-4 mb-4 md:mb-0">
-              <span className="text-sm text-gray-600">© 2024 Oblivion Warp Manager</span>
+              <span className="text-sm text-gray-600">© 2025 XO - آزادی اینترنت ایران</span>
               <a href="#" className="text-sm text-primary hover:underline">
                 {t("privacyPolicy")}
               </a>
-              <a href="#" className="text-sm text-primary hover:underline">
+              <a href="https://github.com/username/xo-iran-freedom" className="text-sm text-primary hover:underline">
                 GitHub
               </a>
             </div>

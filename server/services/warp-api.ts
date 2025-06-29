@@ -63,7 +63,7 @@ export class WarpApiService {
           return { ...result, privateKey: keyPair.privateKey };
         }
       } catch (error) {
-        console.log(`Failed to connect via ${endpoint}:`, error.message);
+        console.log(`Failed to connect via ${endpoint}:`, error instanceof Error ? error.message : String(error));
         continue;
       }
     }

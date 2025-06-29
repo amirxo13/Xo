@@ -1,7 +1,7 @@
 export const translations = {
   en: {
     // Header
-    appTitle: "Oblivion Warp Manager",
+    appTitle: "XO - Internet Freedom",
     connectionStatus: {
       connected: "Connected",
       disconnected: "Disconnected",
@@ -68,7 +68,7 @@ export const translations = {
   },
   fa: {
     // Header
-    appTitle: "مدیریت پیکربندی وارپ اوبلیویون",
+    appTitle: "XO - آزادی اینترنت",
     connectionStatus: {
       connected: "متصل",
       disconnected: "قطع شده",

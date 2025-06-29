@@ -3,11 +3,13 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { WarpApiService } from "./services/warp-api";
 import { ConfigTesterService } from "./services/config-tester";
+import { TelegramBotService } from "./services/telegram-bot";
 import { generateConfigSchema, testConfigSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const warpApi = new WarpApiService();
   const configTester = new ConfigTesterService();
+  const telegramBot = new TelegramBotService();
 
   // Get all configurations
   app.get("/api/configurations", async (req, res) => {
@@ -24,12 +26,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const data = generateConfigSchema.parse(req.body);
       
-      // Generate config using Warp API
-      const warpConfig = await warpApi.generateConfig(data.region, data.warpPlus);
+      // Try Telegram bot first for Warp Plus configs, then fallback to Warp API
+      let warpConfig;
+      let configContent;
+      let configName;
+
+      try {
+        if (data.warpPlus) {
+          // Get Warp Plus config from Telegram bot service
+          const botConfig = await telegramBot.getWarpPlusConfig();
+          configName = `XO-WarpPlus-${Date.now()}.conf`;
+          configContent = telegramBot.formatAsWireGuardConfig(botConfig, data.dns, data.mtu);
+          warpConfig = {
+            privateKey: botConfig.privateKey,
+            publicKey: botConfig.publicKey,
+            endpoint: botConfig.endpoint,
+            addresses: botConfig.addresses
+          };
+        } else {
+          // Use regular Warp API for free configs
+          warpConfig = await warpApi.generateConfig(data.region, data.warpPlus);
+          configName = `XO-config-${Date.now()}.conf`;
+          configContent = warpApi.formatAsWireGuardConfig(warpConfig, data.dns, data.mtu);
+        }
+      } catch (telegramError) {
+        console.log("Telegram bot failed, using fallback Warp API:", telegramError);
+        // Fallback to Warp API
+        warpConfig = await warpApi.generateConfig(data.region, data.warpPlus);
+        configName = `XO-config-${Date.now()}.conf`;
+        configContent = warpApi.formatAsWireGuardConfig(warpConfig, data.dns, data.mtu);
+      }
       
       // Create configuration record
       const config = await storage.createConfiguration({
-        name: `warp-config-${Date.now()}.conf`,
+        name: configName,
         privateKey: warpConfig.privateKey,
         publicKey: warpConfig.publicKey,
         endpoint: warpConfig.endpoint,
@@ -40,9 +70,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isValid: false, // Will be set after testing
         testResults: null,
       });
-
-      // Generate the actual WireGuard config content
-      const configContent = warpApi.formatAsWireGuardConfig(warpConfig, data.dns, data.mtu);
       
       res.json({ 
         configuration: config,
@@ -143,6 +170,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ deletedCount });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete invalid configurations" });
+    }
+  });
+
+  // Get multiple Warp Plus configurations from Telegram bot
+  app.post("/api/configurations/telegram-batch", async (req, res) => {
+    try {
+      const { count = 5, dns = "1.1.1.1, 1.0.0.1", mtu = 1280 } = req.body;
+      
+      const botConfigs = await telegramBot.getMultipleConfigs(Math.min(count, 10)); // Max 10 configs
+      const configurations = [];
+
+      for (const botConfig of botConfigs) {
+        const configName = `XO-TelegramWarp-${Date.now()}-${Math.random().toString(36).substr(2, 5)}.conf`;
+        
+        const config = await storage.createConfiguration({
+          name: configName,
+          privateKey: botConfig.privateKey,
+          publicKey: botConfig.publicKey,
+          endpoint: botConfig.endpoint,
+          dns,
+          mtu,
+          warpPlus: true,
+          region: "telegram-bot",
+          isValid: false,
+          testResults: null,
+        });
+
+        const configContent = telegramBot.formatAsWireGuardConfig(botConfig, dns, mtu);
+        
+        configurations.push({
+          configuration: config,
+          content: configContent
+        });
+
+        // Add small delay to avoid rapid database writes
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      res.json({ 
+        success: true,
+        count: configurations.length,
+        configurations 
+      });
+    } catch (error) {
+      console.error("Telegram batch generation error:", error);
+      res.status(500).json({ error: "Failed to generate configurations from Telegram bot" });
     }
   });
 

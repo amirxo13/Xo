@@ -1,4 +1,6 @@
 import { configurations, type Configuration, type InsertConfiguration } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   getConfiguration(id: number): Promise<Configuration | undefined>;
@@ -9,63 +11,46 @@ export interface IStorage {
   deleteInvalidConfigurations(): Promise<number>;
 }
 
-export class MemStorage implements IStorage {
-  private configurations: Map<number, Configuration>;
-  private currentId: number;
-
-  constructor() {
-    this.configurations = new Map();
-    this.currentId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getConfiguration(id: number): Promise<Configuration | undefined> {
-    return this.configurations.get(id);
+    const [config] = await db.select().from(configurations).where(eq(configurations.id, id));
+    return config || undefined;
   }
 
   async getAllConfigurations(): Promise<Configuration[]> {
-    return Array.from(this.configurations.values()).sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    return await db.select().from(configurations).orderBy(configurations.createdAt);
   }
 
   async createConfiguration(insertConfig: InsertConfiguration): Promise<Configuration> {
-    const id = this.currentId++;
-    const config: Configuration = {
-      id,
-      name: insertConfig.name,
-      privateKey: insertConfig.privateKey,
-      publicKey: insertConfig.publicKey,
-      endpoint: insertConfig.endpoint,
-      dns: insertConfig.dns || "1.1.1.1, 1.0.0.1",
-      mtu: insertConfig.mtu || 1280,
-      warpPlus: insertConfig.warpPlus || false,
-      isValid: insertConfig.isValid || false,
-      testResults: insertConfig.testResults || null,
-      region: insertConfig.region || "auto",
-      createdAt: new Date(),
-    };
-    this.configurations.set(id, config);
+    const [config] = await db
+      .insert(configurations)
+      .values(insertConfig)
+      .returning();
     return config;
   }
 
   async updateConfiguration(id: number, updates: Partial<Configuration>): Promise<Configuration | undefined> {
-    const existing = this.configurations.get(id);
-    if (!existing) return undefined;
-
-    const updated = { ...existing, ...updates };
-    this.configurations.set(id, updated);
-    return updated;
+    const [updated] = await db
+      .update(configurations)
+      .set(updates)
+      .where(eq(configurations.id, id))
+      .returning();
+    return updated || undefined;
   }
 
   async deleteConfiguration(id: number): Promise<boolean> {
-    return this.configurations.delete(id);
+    const result = await db
+      .delete(configurations)
+      .where(eq(configurations.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
   async deleteInvalidConfigurations(): Promise<number> {
-    const invalid = Array.from(this.configurations.values()).filter(config => !config.isValid);
-    invalid.forEach(config => this.configurations.delete(config.id));
-    return invalid.length;
+    const result = await db
+      .delete(configurations)
+      .where(eq(configurations.isValid, false));
+    return result.rowCount || 0;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
