@@ -60,6 +60,11 @@ export const translations = {
     madeWith: "Made with ❤️ for privacy",
     noLogging: "No logging",
     privacyPolicy: "Privacy Policy",
+    
+    // Error Messages
+    networkError: "Network connection failed. Please check your internet connection.",
+    apiError: "Unable to connect to configuration service. This may be due to network restrictions.",
+    iranNetworkNotice: "If you're in Iran, the service may be blocked. Try using a VPN or proxy.",
   },
   fa: {
     // Header
@@ -122,6 +127,11 @@ export const translations = {
     madeWith: "با ❤️ برای حریم خصوصی ساخته شده",
     noLogging: "بدون ثبت لاگ",
     privacyPolicy: "سیاست حریم خصوصی",
+    
+    // Error Messages
+    networkError: "اتصال شبکه ناموفق بود. لطفاً اتصال اینترنت خود را بررسی کنید.",
+    apiError: "عدم اتصال به سرویس پیکربندی. این ممکن است به دلیل محدودیت‌های شبکه باشد.",
+    iranNetworkNotice: "اگر در ایران هستید، سرویس ممکن است مسدود باشد. از VPN یا پروکسی استفاده کنید.",
   },
 };
 

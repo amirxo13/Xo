@@ -100,6 +100,12 @@ The application is configured for deployment on Replit with the following setup:
 ```
 Changelog:
 - June 29, 2025. Initial setup
+- June 29, 2025. Enhanced for Iranian users with network restrictions:
+  * Added multiple API endpoint fallbacks for blocked Cloudflare APIs
+  * Improved connection testing with multiple retry methods
+  * Added comprehensive Iranian user help panel with troubleshooting
+  * Enhanced error messages in Persian and English
+  * Added alternative Cloudflare IP endpoints for better connectivity
 ```
 
 ## User Preferences

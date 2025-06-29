@@ -48,9 +48,21 @@ export function ConfigGenerator() {
       form.reset();
     },
     onError: (error) => {
+      let errorMessage = error.message;
+      let additionalInfo = "";
+      
+      // Check if it's a network-related error
+      if (error.message.includes('network') || error.message.includes('fetch') || error.message.includes('connect')) {
+        errorMessage = t("networkError");
+        additionalInfo = t("iranNetworkNotice");
+      } else if (error.message.includes('API') || error.message.includes('restrictions')) {
+        errorMessage = t("apiError");
+        additionalInfo = t("iranNetworkNotice");
+      }
+
       toast({
-        title: "Error",
-        description: error.message,
+        title: "خطا / Error",
+        description: `${errorMessage} ${additionalInfo}`,
         variant: "destructive",
       });
     },

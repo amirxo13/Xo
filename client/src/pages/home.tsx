@@ -5,6 +5,7 @@ import { ConfigGenerator } from "@/components/config-generator";
 import { ConfigTester } from "@/components/config-tester";
 import { ConfigManager } from "@/components/config-manager";
 import { InstructionsPanel } from "@/components/instructions-panel";
+import { IranHelpPanel } from "@/components/iran-help-panel";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/hooks/use-language";
 import { type Configuration } from "@shared/schema";
@@ -75,6 +76,10 @@ export default function Home() {
 
         <div className="mt-6">
           <ConfigManager onSelectConfig={setSelectedConfig} />
+        </div>
+
+        <div className="mt-6">
+          <IranHelpPanel />
         </div>
 
         <div className="mt-6">

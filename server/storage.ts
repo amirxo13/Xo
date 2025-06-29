@@ -31,8 +31,17 @@ export class MemStorage implements IStorage {
   async createConfiguration(insertConfig: InsertConfiguration): Promise<Configuration> {
     const id = this.currentId++;
     const config: Configuration = {
-      ...insertConfig,
       id,
+      name: insertConfig.name,
+      privateKey: insertConfig.privateKey,
+      publicKey: insertConfig.publicKey,
+      endpoint: insertConfig.endpoint,
+      dns: insertConfig.dns || "1.1.1.1, 1.0.0.1",
+      mtu: insertConfig.mtu || 1280,
+      warpPlus: insertConfig.warpPlus || false,
+      isValid: insertConfig.isValid || false,
+      testResults: insertConfig.testResults || null,
+      region: insertConfig.region || "auto",
       createdAt: new Date(),
     };
     this.configurations.set(id, config);
