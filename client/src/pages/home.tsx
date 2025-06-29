@@ -5,6 +5,8 @@ import { ConfigGenerator } from "@/components/config-generator";
 import { ConfigTester } from "@/components/config-tester";
 import { ConfigManager } from "@/components/config-manager";
 import { TelegramGenerator } from "@/components/telegram-generator";
+import { ConfigUploader } from "@/components/config-uploader";
+import { WireGuardDownload } from "@/components/wireguard-download";
 import { InstructionsPanel } from "@/components/instructions-panel";
 import { IranHelpPanel } from "@/components/iran-help-panel";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -74,6 +76,7 @@ export default function Home() {
           <div className="space-y-6">
             <ConfigGenerator />
             <TelegramGenerator />
+            <ConfigUploader />
           </div>
           <ConfigTester selectedConfig={selectedConfig} />
         </div>
@@ -82,10 +85,11 @@ export default function Home() {
           <ConfigManager onSelectConfig={setSelectedConfig} />
         </div>
 
-        <div className="mt-6">
+        <div className="grid gap-6 lg:grid-cols-2 mt-8">
+          <WireGuardDownload />
           <IranHelpPanel />
         </div>
-
+        
         <div className="mt-6">
           <InstructionsPanel />
         </div>

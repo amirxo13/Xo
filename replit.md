@@ -106,6 +106,14 @@ Changelog:
   * Added comprehensive Iranian user help panel with troubleshooting
   * Enhanced error messages in Persian and English
   * Added alternative Cloudflare IP endpoints for better connectivity
+- June 29, 2025. Major update - Added Telegram bot integration and file upload:
+  * Integrated @generatewarpplusbot from Telegram for Warp Plus configurations
+  * Added ConfigUploader component for importing .conf files directly
+  * Added WireGuardDownload component with multiple download sources
+  * Changed application name from "Oblivion" to "XO" for Iranian market
+  * Added batch configuration generation from Telegram bot
+  * Improved user experience with drag-and-drop file uploads
+  * Added F-Droid download option for users without Google Play access
 ```
 
 ## User Preferences

@@ -219,6 +219,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Upload WireGuard configuration file
+  app.post("/api/configurations/upload", async (req, res) => {
+    try {
+      const { content } = req.body;
+      
+      if (!content || typeof content !== 'string') {
+        return res.status(400).json({ error: "Configuration content is required" });
+      }
+
+      // Parse WireGuard configuration
+      const lines = content.split('\n');
+      let privateKey = '';
+      let publicKey = '';
+      let endpoint = '';
+      let dns = '1.1.1.1, 1.0.0.1';
+      let mtu = 1280;
+      let currentSection = '';
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+          currentSection = trimmed.toLowerCase();
+          continue;
+        }
+
+        if (trimmed.includes('=')) {
+          const [key, value] = trimmed.split('=').map(s => s.trim());
+          
+          if (currentSection === '[interface]') {
+            if (key.toLowerCase() === 'privatekey') privateKey = value;
+            if (key.toLowerCase() === 'dns') dns = value;
+            if (key.toLowerCase() === 'mtu') mtu = parseInt(value) || 1280;
+          }
+          
+          if (currentSection === '[peer]') {
+            if (key.toLowerCase() === 'publickey') publicKey = value;
+            if (key.toLowerCase() === 'endpoint') endpoint = value;
+          }
+        }
+      }
+
+      if (!privateKey || !publicKey || !endpoint) {
+        return res.status(400).json({ error: "Invalid WireGuard configuration: missing required fields" });
+      }
+
+      const configName = `XO-Uploaded-${Date.now()}.conf`;
+      
+      const config = await storage.createConfiguration({
+        name: configName,
+        privateKey,
+        publicKey,
+        endpoint,
+        dns,
+        mtu,
+        warpPlus: true, // Assume uploaded configs are Warp Plus
+        region: "uploaded",
+        isValid: false,
+        testResults: null,
+      });
+
+      res.json({ 
+        success: true,
+        configuration: config,
+        message: "Configuration uploaded successfully"
+      });
+    } catch (error) {
+      console.error("Config upload error:", error);
+      res.status(500).json({ error: "Failed to upload configuration" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
